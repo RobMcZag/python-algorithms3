@@ -4,6 +4,8 @@ import graph
 
 class GraphTest(unittest.TestCase):
 
+    __runSlowTests = False
+
     def testEmptyGraph(self):
         g = graph.Graph(5)
         self.assertIsNotNone(g)
@@ -57,7 +59,7 @@ class GraphTest(unittest.TestCase):
         self.assertTrue(3 in g.adjacents(1))
         self.assertTrue(3 in g.adjacents(3))
         self.assertTrue(4 in g.adjacents(4))
-        #print(g)
+        # print(g)
 
     def testToStringEmptyGraph(self):
         g = graph.Graph(5)
@@ -71,7 +73,7 @@ class GraphTest(unittest.TestCase):
         g.add_edge(3, 3)
         g.add_edge(4, 4)
 
-        #print(g)
+        # print(g)
         sg = str(g)
         self.assertTrue("0 => {}" in sg)
         self.assertTrue("1 => {2, 3}" in sg or "1 => {3, 2}" in sg)
@@ -86,7 +88,7 @@ class GraphTest(unittest.TestCase):
         self.assertTrue(0 in g.adjacents(5))
         self.assertTrue(3 in g.adjacents(5))
         self.assertTrue(5 in g.adjacents(3))
-        #print(g)
+        # print(g)
 
     def testLoadFromFileMedium(self):
         g = graph.Graph.from_file('mediumG.txt')
@@ -95,8 +97,13 @@ class GraphTest(unittest.TestCase):
         self.assertTrue(244 in g.adjacents(246))
         self.assertTrue(0 in g.adjacents(225))
         self.assertTrue(15 in g.adjacents(225))
-        #print(g)
+        # print(g)
 
+    @unittest.skipUnless(__runSlowTests, "Skipping testLoadFromFileLarge as test is slow, takes about 15 seconds.")
+    def testLoadFromFileLarge(self):
+        g = graph.Graph.from_file('largeG.txt')
+        self.assertEqual(1000000, g.num_vertices())
+        self.assertEqual(7586063, g.num_edges())
 
 if __name__ == '__main__':
     unittest.main()
