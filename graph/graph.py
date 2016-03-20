@@ -1,5 +1,5 @@
 """
-Undirected graph data type and methods for its manipulation.
+Undirected graph data type and procedures for its manipulation.
 """
 
 
@@ -18,7 +18,7 @@ class Graph:
     def __init__(self, numvertices):
         self._numvertices = numvertices
         self._numedges = 0
-        self._adjacents = [set() for x in range(0,numvertices)]
+        self._adjacents = [set() for _ in range(0, numvertices)]
 
     @classmethod
     def from_file(cls, filename):
@@ -35,7 +35,7 @@ class Graph:
         """
         with open(filename) as fh:
             vertnum = int(fh.readline().strip())
-            edgenum = int(fh.readline().strip())
+            int(fh.readline().strip())
             graph = Graph(vertnum)
 
             for line in fh:
@@ -86,3 +86,72 @@ class Graph:
                 adjstr = "{}"
             lines.append(str(v) + " => " + adjstr + "\n")
         return "".join(lines)
+
+
+class DepthFirstSearch:
+    """
+    Finds the vertexes connected with the given source vertex and a path (not necessarily the shortest) to reach it.
+    """
+    def __init__(self, graph, source_vertex):
+        """
+        Navigate the given Graph from the given source vertex using Depth First Search.
+
+        :param graph: the graph we want to navigate.
+        :type graph: Graph
+        :param source_vertex: the vertex where we start the navigation.
+        :type source_vertex: int
+        :return: a DepthFirstSearch object to query the graph starting from the given source vertex.
+        """
+        self._graph = graph
+        self._source = source_vertex
+        self._visited = [False] * self._graph.num_vertices()
+        self._predecessor = [-1] * self._graph.num_vertices()
+
+        self._predecessor[source_vertex] = source_vertex
+        self._count = self._depth_first_search(self._source)
+
+    def _depth_first_search(self, vertex):
+        count = 0
+        self._visited[vertex] = True
+
+        for v in self._graph.adjacents(vertex):
+            if not self._visited[v]:
+                self._predecessor[v] = vertex
+                count += self._depth_first_search(v)
+
+        return count + 1
+
+    def connected(self, vertex):
+        """
+
+        :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
+        :type vertex: int
+        :return: True if the given vertex is connected to the source, False otherwise.
+        """
+        return self._visited[vertex]
+
+    def count(self):
+        """
+
+        :return: How many vertexes are connected with the source, including the source in the count.
+        :rtype: int
+        """
+        return self._count
+
+    def path_to(self, vertex):
+        """
+        Find a path from the given vertex to the source.
+
+        :param vertex: the vertex to find a path to the source
+        :type vertex: int
+        :return: a list with the vertexes to navigate to get to the source if it is connected or None otherwise
+        """
+        path = None
+        if self.connected(vertex):
+            path = []
+            while vertex != self._source:
+                path.append(vertex)
+                vertex = self._predecessor[vertex]
+            path.append(self._source)
+
+        return path
