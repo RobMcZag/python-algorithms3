@@ -20,6 +20,32 @@ class Graph:
         self._numedges = 0
         self._adjacents = [set() for x in range(0,numvertices)]
 
+    @classmethod
+    def from_file(cls, filename):
+        """Loads a graph definition from a file.
+
+        First line must contain the number of vertexes;
+        second line must contain the number of edges;
+        from third line onward there must be two integers representing the two vertexes to be connected by and edge.
+
+        :param filename: the name of the file containing the graph definition.
+        :type filename: str
+        :return: a graph built from the information stored in the file
+        :rtype: Graph
+        """
+        with open(filename) as fh:
+            vertnum = int(fh.readline().strip())
+            edgenum = int(fh.readline().strip())
+            graph = Graph(vertnum)
+
+            for line in fh:
+                numstr = line.split()
+                v1 = int(numstr[0])
+                v2 = int(numstr[1])
+                graph.add_edge(v1, v2)
+
+        return graph
+
     def num_vertices(self):
         """
         :return: the number of vertices of this Graph.
