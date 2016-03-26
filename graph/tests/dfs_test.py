@@ -48,5 +48,27 @@ class DepthFirstSearchTest(unittest.TestCase):
         self.assertEqual([1, 3], dfs.path_to(1))
         # print("Path to 5: ", dfs.path_to(5))
 
+    def testPathTo3(self):
+        g = graph.Graph.from_file('tinyG.txt')
+        dfs = graph.DepthFirstSearch(g, 0)
+        self.assertIsNone(dfs.path_to(7))
+        self.assertIsNone(dfs.path_to(8))
+        self.assertIsNone(dfs.path_to(9))
+        self.assertIsNone(dfs.path_to(12))
+        self.assertEqual([4, 3, 5, 0], dfs.path_to(4))
+
+        dfs = graph.DepthFirstSearch(g, 7)
+        self.assertEqual([8,7], dfs.path_to(8))
+
+        dfs = graph.DepthFirstSearch(g, 10)
+        self.assertEqual([12, 11, 9, 10], dfs.path_to(12))
+
+    def testPathTo4(self):
+        g = graph.Graph.from_file('mediumG.txt')
+        dfs = graph.DepthFirstSearch(g, 0)
+        self.assertIsNotNone(dfs.path_to(244))
+        self.assertIsNotNone(dfs.path_to(122))
+
+
 if __name__ == '__main__':
     unittest.main()

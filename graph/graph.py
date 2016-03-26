@@ -2,6 +2,9 @@
 Undirected graph data type and procedures for its manipulation.
 """
 
+from collections import deque
+import sys
+
 
 class Graph:
     """
@@ -92,7 +95,7 @@ class DepthFirstSearch:
     """
     Finds the vertexes connected with the given source vertex and a path (not necessarily the shortest) to reach it.
     """
-    def __init__(self, graph, source_vertex):
+    def __init__(self, graph: Graph, source_vertex: int):
         """
         Navigate the given Graph from the given source vertex using Depth First Search.
 
@@ -102,22 +105,21 @@ class DepthFirstSearch:
         :type source_vertex: int
         :return: a DepthFirstSearch object to query the graph starting from the given source vertex.
         """
-        self._graph = graph
         self._source = source_vertex
-        self._visited = [False] * self._graph.num_vertices()
-        self._predecessor = [-1] * self._graph.num_vertices()
+        self._visited = [False] * graph.num_vertices()
+        self._predecessor = [-1] * graph.num_vertices()
 
         self._predecessor[source_vertex] = source_vertex
-        self._count = self._depth_first_search(self._source)
+        self._count = self._depth_first_search(graph, source_vertex)
 
-    def _depth_first_search(self, vertex):
+    def _depth_first_search(self, graph: Graph, vertex: int):
         count = 0
         self._visited[vertex] = True
 
-        for v in self._graph.adjacents(vertex):
+        for v in graph.adjacents(vertex):
             if not self._visited[v]:
                 self._predecessor[v] = vertex
-                count += self._depth_first_search(v)
+                count += self._depth_first_search(graph, v)
 
         return count + 1
 
@@ -155,3 +157,131 @@ class DepthFirstSearch:
             path.append(self._source)
 
         return path
+
+
+class BreadthFirstSearch:
+    """
+    Finds the vertexes connected with the given source vertex and a the shortest path to reach each.
+    """
+    def __init__(self, graph, source_vertex):
+        """
+        Navigate the given Graph from the given source vertex using Breadth First Search.
+
+        :param graph: the graph we want to navigate.
+        :type graph: Graph
+        :param source_vertex: the vertex where we start the navigation.
+        :type source_vertex: int
+        :return: a BreadthFirstSearch object to query the graph starting from the given source vertex.
+        """
+        self._graph = graph
+        self._source = source_vertex
+        self._queue = deque()
+        self._visited = [False] * self._graph.num_vertices()
+        self._predecessor = [-1] * self._graph.num_vertices()
+        self._distance = [sys.maxsize] * self._graph.num_vertices()
+        self._count = 0
+        self._breadth_first_search(self._source)
+
+    def _breadth_first_search(self, source):
+        self._visited[source] = True
+        self._predecessor[source] = source
+        self._distance[source] = 0
+        self._queue.append(source)
+        while len(self._queue) > 0:
+            v = self._queue.popleft()
+            self._count += 1
+            for adj in self._graph.adjacents(v):
+                if not self._visited[adj]:
+                    self._visited[adj] = True
+                    self._predecessor[adj] = v
+                    self._distance[adj] = self._distance[v] + 1
+                    self._queue.append(adj)
+
+    def connected(self, vertex):
+        """
+
+        :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
+        :type vertex: int
+        :return: True if the given vertex is connected to the source, False otherwise.
+        """
+        return self._visited[vertex]
+
+    def count(self):
+        """
+
+        :return: How many vertexes are connected with the source, including the source in the count.
+        :rtype: int
+        """
+        return self._count
+
+    def path_to(self, vertex):
+        """
+        Find a path from the given vertex to the source.
+
+        :param vertex: the vertex to find a path to the source
+        :type vertex: int
+        :return: a list with the vertexes to navigate to get to the source if it is connected or None otherwise
+        """
+        path = None
+        if self.connected(vertex):
+            path = []
+            while vertex != self._source:
+                path.append(vertex)
+                vertex = self._predecessor[vertex]
+            path.append(self._source)
+
+        return path
+
+    def distance(self, vertex):
+        """
+
+        :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
+        :type vertex: int
+        :return: the distance between the given vertex and the source.
+        """
+        return self._distance[vertex]
+
+
+class ConnectedComponents:
+    """
+    Determines the connected components in an undirected graph.
+    """
+    def __init__(self, graph: Graph):
+        """
+        Analyzes the given graph and store the results to be ready to answer for queries on connected components.
+
+        :param graph: The Graph to analyze
+        """
+        self._visited = [False] * graph.num_vertices()
+        self._group = [-1] * graph.num_vertices()
+        self._group_size = [-1] * graph.num_vertices()
+        self._count = 0
+
+        for v in range(graph.num_vertices()):
+            if not self._visited[v]:
+                self._visited[v] = True
+                self._group[v] = v
+                self._count += 1
+                print("Checking CC for vertex ", v)
+                dfs = DepthFirstSearch(graph, v)
+                self._group_size[v] = dfs.count()
+                for w in range(v+1, graph.num_vertices()):
+                    if dfs.connected(w):
+                        self._visited[w] = True
+                        self._group[w] = v
+                        self._group_size[w] = dfs.count()
+
+    def count(self):
+        """
+        :return: The number of different connected components.
+        """
+        return self._count
+
+    def connected(self, v: int, w: int) -> bool:
+        return self._group[v] == self._group[w]
+
+    def group(self, vertex: int) -> int:
+        return self._group[vertex]
+
+    def groupsize(self, vertex: int) -> int:
+        return self._group_size[vertex]
