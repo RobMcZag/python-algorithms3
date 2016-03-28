@@ -8,7 +8,7 @@ import sys
 
 class Graph:
     """
-    Generic purpose data structure to represent an undirected graph in a time and memory efficient way.\n
+    Generic purpose data structure to represent an directed or undirected graph in a time and memory efficient way.\n
     Vertexes are named with consecutive numbers starting from 0
     (the last is V-1, being V the number of vertexes in the graph).
 
@@ -18,13 +18,20 @@ class Graph:
     i.e. vertexes reachable from V with a direct connection (an edge).
     """
 
-    def __init__(self, numvertices):
+    def __init__(self, numvertices, directed=False):
+        """Creates a graph with the given number of vertices and no edges.
+
+        :param directed: True if the graph is a directed graph; default is False, i.e. an undirected graph.
+        :return: an empty graph with a structure to hold edges for the given number of vertexes
+        :rtype: Graph
+        """
         self._numvertices = numvertices
+        self._directed = directed
         self._numedges = 0
-        self._adjacents = [set() for _ in range(0, numvertices)]
+        self._adjacents = [list() for _ in range(0, numvertices)]
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename: str, directed = False):
         """Loads a graph definition from a file.
 
         First line must contain the number of vertexes;
@@ -32,14 +39,14 @@ class Graph:
         from third line onward there must be two integers representing the two vertexes to be connected by and edge.
 
         :param filename: the name of the file containing the graph definition.
-        :type filename: str
+        :param directed: True if the graph is a directed graph; default is False, i.e. an undirected graph.
         :return: a graph built from the information stored in the file
         :rtype: Graph
         """
         with open(filename) as fh:
             vertnum = int(fh.readline().strip())
             int(fh.readline().strip())
-            graph = Graph(vertnum)
+            graph = Graph(vertnum, directed)
 
             for line in fh:
                 numstr = line.split()
@@ -49,18 +56,16 @@ class Graph:
 
         return graph
 
-    def num_vertices(self):
-        """
-        :return: the number of vertices of this Graph.
-        :rtype: int
-        """
+    def is_directed(self):
+        """:return: True if the graph is a directed graph, False if is an undirected graph."""
+        return self._directed
+
+    def num_vertices(self) -> int:
+        """:return: the number of vertices of this Graph."""
         return self._numvertices
 
-    def num_edges(self):
-        """
-        :return: the number of edges of this Graph.
-        :rtype: int
-        """
+    def num_edges(self) -> int:
+        """:return: the number of edges of this Graph."""
         return self._numedges
 
     def add_edge(self, vertex1, vertex2):
@@ -72,10 +77,10 @@ class Graph:
         :param vertex2: the second vertex of the edge being added.
         :return: None
         """
-        if vertex1 not in self._adjacents[vertex2]:
-            self._numedges += 1
-            self._adjacents[vertex1].add(vertex2)
-            self._adjacents[vertex2].add(vertex1)
+        self._numedges += 1
+        self._adjacents[vertex1].append(vertex2)
+        if not self._directed:
+            self._adjacents[vertex2].append(vertex1)
 
     def adjacents(self, vertex):
         return self._adjacents[vertex]
@@ -86,7 +91,7 @@ class Graph:
             if len(adjacents) > 0:
                 adjstr = str(adjacents)
             else:
-                adjstr = "{}"
+                adjstr = "[]"
             lines.append(str(v) + " => " + adjstr + "\n")
         return "".join(lines)
 
@@ -96,13 +101,10 @@ class DepthFirstSearch:
     Finds the vertexes connected with the given source vertex and a path (not necessarily the shortest) to reach it.
     """
     def __init__(self, graph: Graph, source_vertex: int):
-        """
-        Navigate the given Graph from the given source vertex using Depth First Search.
+        """Navigate the given Graph from the given source vertex using Depth First Search.
 
         :param graph: the graph we want to navigate.
-        :type graph: Graph
         :param source_vertex: the vertex where we start the navigation.
-        :type source_vertex: int
         :return: a DepthFirstSearch object to query the graph starting from the given source vertex.
         """
         self._source = source_vertex
@@ -123,29 +125,21 @@ class DepthFirstSearch:
 
         return count + 1
 
-    def connected(self, vertex):
+    def connected(self, vertex: int):
         """
-
         :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
-        :type vertex: int
         :return: True if the given vertex is connected to the source, False otherwise.
         """
         return self._visited[vertex]
 
-    def count(self):
-        """
-
-        :return: How many vertexes are connected with the source, including the source in the count.
-        :rtype: int
-        """
+    def count(self) -> int:
+        """:return: How many vertexes are connected with the source, including the source in the count."""
         return self._count
 
-    def path_to(self, vertex):
-        """
-        Find a path from the given vertex to the source.
+    def path_to(self, vertex: int):
+        """Find a path from the given vertex to the source.
 
         :param vertex: the vertex to find a path to the source
-        :type vertex: int
         :return: a list with the vertexes to navigate to get to the source if it is connected or None otherwise
         """
         path = None
@@ -163,14 +157,11 @@ class BreadthFirstSearch:
     """
     Finds the vertexes connected with the given source vertex and a the shortest path to reach each.
     """
-    def __init__(self, graph, source_vertex):
-        """
-        Navigate the given Graph from the given source vertex using Breadth First Search.
+    def __init__(self, graph: Graph, source_vertex: int):
+        """Navigate the given Graph from the given source vertex using Breadth First Search.
 
         :param graph: the graph we want to navigate.
-        :type graph: Graph
         :param source_vertex: the vertex where we start the navigation.
-        :type source_vertex: int
         :return: a BreadthFirstSearch object to query the graph starting from the given source vertex.
         """
         self._graph = graph
@@ -197,29 +188,21 @@ class BreadthFirstSearch:
                     self._distance[adj] = self._distance[v] + 1
                     self._queue.append(adj)
 
-    def connected(self, vertex):
+    def connected(self, vertex: int):
         """
-
         :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
-        :type vertex: int
         :return: True if the given vertex is connected to the source, False otherwise.
         """
         return self._visited[vertex]
 
-    def count(self):
-        """
-
-        :return: How many vertexes are connected with the source, including the source in the count.
-        :rtype: int
-        """
+    def count(self) -> int:
+        """:return: How many vertexes are connected with the source, including the source in the count."""
         return self._count
 
-    def path_to(self, vertex):
-        """
-        Find a path from the given vertex to the source.
+    def path_to(self, vertex: int):
+        """Find a path from the given vertex to the source.
 
         :param vertex: the vertex to find a path to the source
-        :type vertex: int
         :return: a list with the vertexes to navigate to get to the source if it is connected or None otherwise
         """
         path = None
@@ -232,23 +215,19 @@ class BreadthFirstSearch:
 
         return path
 
-    def distance(self, vertex):
+    def distance(self, vertex: int):
         """
-
         :param vertex: the vertex we want to know if it is connected to the source fro the current Graph.
-        :type vertex: int
         :return: the distance between the given vertex and the source.
         """
         return self._distance[vertex]
 
 
 class ConnectedComponents:
-    """
-    Determines the connected components in an undirected graph.
-    """
+    """Determines the connected components in an undirected graph."""
+
     def __init__(self, graph: Graph):
-        """
-        Analyzes the given graph and store the results to be ready to answer for queries on connected components.
+        """ Analyzes the given graph and store the results to be ready to answer for queries on connected components.
 
         :param graph: The Graph to analyze
         """
@@ -272,16 +251,54 @@ class ConnectedComponents:
                         self._group_size[w] = dfs.count()
 
     def count(self):
-        """
-        :return: The number of different connected components.
-        """
+        """:return: The number of different connected components. """
         return self._count
 
     def connected(self, v: int, w: int) -> bool:
+        """ :return: True if the two vertexes are connected, False otherwise."""
         return self._group[v] == self._group[w]
 
     def group(self, vertex: int) -> int:
+        """:return: The id of the connected component the given vertex is part of."""
         return self._group[vertex]
 
     def groupsize(self, vertex: int) -> int:
+        """:return: The size of the connected component the given vertex is part of."""
         return self._group_size[vertex]
+
+
+class CycleDetector:
+    """A class to detect cycles in undirected graphs.
+    Cycles can be self loops, parallel edges or multi vertec circular paths.
+    """
+    pass
+
+
+"""
+More depth-first search applications.
+
+    Cycle detection: Is a given graph acyclic? Cycle.java uses depth-first search to determine whether a graph has a
+    cycle, and if so return one. It takes time proportional to V + E in the worst case.
+
+    Two-colorability:
+    Can the vertices of a given graph be assigned one of two colors in such a way that no edge
+    connects vertices of the same color?
+    Bipartite.java uses depth-first search to determine whether a graph has a bipartition;
+    if so, return one; if not, return an odd-length cycle. It takes time proportional to V + E in the worst case.
+
+    Bridge:
+    A bridge (or cut-edge) is an edge whose deletion increases the number of connected components.
+    Equivalently, an edge is a bridge if and only if it is not contained in any cycle.
+    Bridge.java uses depth-first search to find time the bridges in a graph.
+    It takes time proportional to V + E in the worst case.
+
+    Biconnectivity:
+    An articulation vertex (or cut vertex) is a vertex whose removal increases the number of connected components.
+    A graph is biconnected if it has no articulation vertices. Biconnected.java uses depth-first search to find
+    the bridges and articulation vertices. It takes time proportional to V + E in the worst case.
+
+    Planarity:
+    A graph is planar if it can be drawn in the plane such that no edges cross one another.
+    The Hopcroft-Tarjan algorithm is an advanced application of depth-first search that determines whether a graph
+    is planar in linear time.
+"""

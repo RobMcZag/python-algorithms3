@@ -40,16 +40,36 @@ class BreadthFirstSearchTest(unittest.TestCase):
         self.assertEqual(250, bfs.count())
         self.assertTrue(bfs.connected(123))
         self.assertEqual(9, bfs.distance(123))
-        self.assertEqual([123, 246, 8, 210, 139, 92, 171, 165, 68, 0], bfs.path_to(123))
+        self.assertEqual([123, 246, 244, 207, 122, 92, 171, 165, 68, 0], bfs.path_to(123))
 
+    def testTinyDG(self):
+        g = graph.Graph.from_file('tinyDG.txt', directed=True)
+        bfs = graph.BreadthFirstSearch(g, 0)
 
-"""
-        dfs = graph.DepthFirstSearch(g, 7)
-        self.assertEqual([8,7], dfs.path_to(8))
+        self.assertEqual(6, bfs.count())
 
-        dfs = graph.DepthFirstSearch(g, 10)
-        self.assertEqual([12, 11, 9, 10], dfs.path_to(12))
-"""
+        self.assertTrue(bfs.connected(4))
+        self.assertIsNotNone(bfs.path_to(4))
+        self.assertFalse(bfs.connected(7))
+        self.assertIsNone(bfs.path_to(7))
+
+        self.assertEqual([2, 4, 5, 0], bfs.path_to(2))
+        self.assertEqual(3, bfs.distance(2))
+
+    def testTinyDAG(self):
+        g = graph.Graph.from_file('tinyDAG.txt', directed=True)
+        bfs = graph.BreadthFirstSearch(g, 0)
+
+        self.assertEqual(9, bfs.count())
+
+        self.assertTrue(bfs.connected(4))
+        self.assertIsNotNone(bfs.path_to(4))
+        self.assertFalse(bfs.connected(7))
+        self.assertIsNone(bfs.path_to(7))
+
+        self.assertEqual([12, 9, 6, 0], bfs.path_to(12))
+        self.assertEqual(3, bfs.distance(12))
+
 
 if __name__ == '__main__':
     unittest.main()

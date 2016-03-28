@@ -55,19 +55,45 @@ class DepthFirstSearchTest(unittest.TestCase):
         self.assertIsNone(dfs.path_to(8))
         self.assertIsNone(dfs.path_to(9))
         self.assertIsNone(dfs.path_to(12))
-        self.assertEqual([4, 3, 5, 0], dfs.path_to(4))
+        self.assertEqual([4, 5, 0], dfs.path_to(4)) # or [4, 3, 5, 0]
 
         dfs = graph.DepthFirstSearch(g, 7)
         self.assertEqual([8,7], dfs.path_to(8))
 
         dfs = graph.DepthFirstSearch(g, 10)
-        self.assertEqual([12, 11, 9, 10], dfs.path_to(12))
+        self.assertEqual([12, 9, 10], dfs.path_to(12))  # or [12, 11, 9, 10]
 
     def testPathTo4(self):
         g = graph.Graph.from_file('mediumG.txt')
         dfs = graph.DepthFirstSearch(g, 0)
         self.assertIsNotNone(dfs.path_to(244))
         self.assertIsNotNone(dfs.path_to(122))
+
+    def testPathToDG(self):
+        g = graph.Graph.from_file('tinyDG.txt', directed=True)
+        dfs = graph.DepthFirstSearch(g, 0)
+        self.assertIsNotNone(dfs.path_to(1))
+        self.assertIsNotNone(dfs.path_to(5))
+        self.assertIsNotNone(dfs.path_to(4))
+        self.assertIsNotNone(dfs.path_to(2))
+        self.assertIsNone(dfs.path_to(6))
+        self.assertIsNone(dfs.path_to(12))
+        self.assertEqual([4, 5, 0], dfs.path_to(4))
+        self.assertEqual([2, 4, 5, 0], dfs.path_to(2))  # or [2, 3, 4, 5, 0]
+
+
+    def testPathToDAG(self):
+        g = graph.Graph.from_file('tinyDAG.txt', directed=True)
+        dfs = graph.DepthFirstSearch(g, 0)
+        self.assertIsNotNone(dfs.path_to(1))
+        self.assertIsNotNone(dfs.path_to(5))
+        self.assertIsNotNone(dfs.path_to(4))
+        self.assertIsNotNone(dfs.path_to(6))
+        self.assertIsNone(dfs.path_to(2))
+        self.assertIsNone(dfs.path_to(8))
+        self.assertIsNone(dfs.path_to(3))
+        self.assertEqual([4, 6, 0], dfs.path_to(4))     # or [4, 5, 0]
+        self.assertEqual([12, 9, 6, 0], dfs.path_to(12))  # or [12, 11, 9, 6, 0]
 
 
 if __name__ == '__main__':
